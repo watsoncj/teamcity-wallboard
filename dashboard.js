@@ -23,7 +23,7 @@ http.createServer(function (req, res) {
       buildCount: 0
    };
    //sys.puts(JSON.stringify(req.headers, null, '  '));
-   sys.puts(req.url);
+   //sys.puts(req.url);
    if (req.url!='/')
    {
       res.writeHead('400');
@@ -32,8 +32,7 @@ http.createServer(function (req, res) {
    res.writeHead(200, {'Content-Type': 'text/plain'});
    //var request = client.request('GET', '/httpAuth/app/rest/builds/?buildType=id:bt2&locator=running:true', headers);
    fetchBuilds(res, req, '/httpAuth/app/rest/builds/?buildType=id:bt2&locator=running:true', model);
-   fetchBuilds(res, req, '/httpAuth/app/rest/builds/?buildType=id:bt2', model);
-}).listen(8181, '127.0.0.1');
+}).listen(8080, '127.0.0.1');
 console.log('Server running at http://localhost:8080');
 
 function handleResponse(request, func)
@@ -57,8 +56,10 @@ function fetchBuilds(res, req, url, model)
    handleResponse(request, function(content) {
       var parsedBuild = JSON.parse(content)
       // if no build found just return
-      if(!parsedBuild.build)
+      if(!parsedBuild.build) {
+        fetchBuilds(res, req, '/httpAuth/app/rest/builds/?buildType=id:bt2', model);
         return;
+      }
       var build = parsedBuild.build[0];
       if(!build)
         build = parsedBuild.build;
@@ -70,7 +71,7 @@ function fetchBuilds(res, req, url, model)
       handleResponse(request, function(content)
       {
          var buildData = JSON.parse(content);
-      sys.puts(JSON.stringify(buildData, null, '  ' ));
+      //sys.puts(JSON.stringify(buildData, null, '  ' ));
          var running = buildData.running;
          var buildName = buildData.buildType.name;
          var buildStatus = running ? 'RUNNING' : buildData.status;
@@ -85,7 +86,7 @@ function fetchBuilds(res, req, url, model)
          request.end();
          handleResponse(request, function(content)
          {
-         sys.puts(content);
+         //sys.puts(content);
             var changeData = JSON.parse(content);
             var changeCount = changeData['@count'];
 
@@ -164,9 +165,9 @@ function checkComplete(res, model, changeDetails)
       return;
 
    // all callbacks have completed, render view
-   sys.puts();
-   sys.puts('model');
-   sys.puts(JSON.stringify(model, null, '  '));
+   //sys.puts();
+   //sys.puts('model');
+   //sys.puts(JSON.stringify(model, null, '  '));
    fs.readFile("./template.html", function (err, template) {
       if (err) throw err;
       res.writeHeader(200, {'Content-Type': 'text/html'});
