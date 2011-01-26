@@ -1,16 +1,19 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html> 
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>My Framework</title>
+  <title>Wallboard</title>
   <link href='/stylesheets/Merriweather.css' rel='stylesheet' type='text/css'> 
   <style type="text/css">
      body {background-color: #1c1c1c; font-family: Merriweather; color: white; text-shadow: 1px 1px 1px rgba(255,255,255,0.2); font-size: 25px;}
      h1 {margin: 0;}
      .SUCCESS { color: #9fc302; }
      .FAILED { color: #c30202; }
+	 img.avatar { float: left; clear: left; margin: 5px; }
+	 p { margin: 0; }
+	 div.change { clear: both; }
+	 div.details { padding-left: 90px; }
   </style>
 </head>
 
@@ -19,7 +22,11 @@
      <section class='{{buildStatus}}'>
        {{buildStatus}}: {{buildStatusText}}
      </section>
-     <img src='{{avatar}}'></img>
-     {{userName}}: {{comment}}
+
+	 {{#changes}}
+	 <div class='change'>
+		 <img class='avatar' src='{{avatar}}'/><div class='details'>{{name}}<br/>{{comment}}</div>
+     </div>
+	 {{/changes}}
 </body>
 </html>
