@@ -1,10 +1,11 @@
+var crypto = require('crypto');
 var http = require('http');
 var sys = require('sys');
-var posix = require('posix')
+var fs = require('fs')
 var xml = require('./lib/node-xml');
 var Mustache = require('./lib/mustache');
 
-sys.puts(Mustache);
+var userEmail = {'hjerger': 'watsoncj@gmail.com', 'jeff': 'jstano@unifocus.com'};
 
 var headers = {'host': 'den-dev-01', 'Authorization': 'Basic Y3dhdHNvbjpMb2NrbncwZA==', 'Accept': 'application/json'};
 var client = http.createClient(8111, 'den-dev-01');
@@ -15,7 +16,7 @@ http.createServer(function (req, res) {
    request.end();
    handleResponse(request, function(content) {
       var build = JSON.parse(content).build[0];
-   
+
       // got build id now fetch status info
       var request = client.request('GET', build.href, headers);
       request.end();
@@ -25,20 +26,60 @@ http.createServer(function (req, res) {
          var buildName = buildData.buildType.name;
          var status = buildData.status;
          var statusText = buildData.statusText;
-         sys.puts(buildName + ' ' + status + ' '+ statusText);
+         var changes = buildData.changes;
+         var request = client.request('GET', changes.href, headers);
+         request.end();
+         handleResponse(request, function(content)
+         {
+            var changeData = JSON.parse(content);
 
+            var view = {
+               buildName: buildName,
+               buildStatus: status,
+               buildStatusText: statusText,
+               changeCount: changes.count + (changes.count==1 ? ' change' : ' changes'),
+               changes: Array()
+            };
 
-         var view = {
-            buildName: buildName,
-            buildStatus: status,
-            buildStatusText: statusText
-         };
+            var changes = changeData.change;
+            if (!changes.length)
+              changes = Array(changeData.change);
+            sys.puts(changes.length);
+            for(var change = 0; change<changes.length; change++) {
+               var href = changeData.change[change]['@href'];
+               var request = client.request('GET', href, headers);
 
-         posix.cat("./template.html").addCallback(function(template) {
-            res.sendHeader(200, {'Content-Type': 'text/html'})
-            res.sendBody(Mustache.to_html(template, action.view))
-            res.finish()
-         })
+               request.end();
+               handleResponse(request, function(content) {
+                  var changeDetails = JSON.parse(content);
+
+                  var email = userEmail[changeDetails.username];
+                  var avatar = '';
+                  if (email) {
+                     var md5 = crypto.createHash('md5').update(email).digest('hex');
+                     avatar = 'http://www.gravatar.com/avatar/' + md5;
+                  } 
+                  var name = changeDetails.name;
+                  if(!name)
+                     name =  changeDetails.userName;
+
+                  view.changes[change] = {
+                     name: name,
+                     comment: changeDetails.comment,
+                     avatar: avatar
+                  };
+
+                  if (change == changes.length - 1) {
+                     fs.readFile("./template.html", function (err, template) {
+                        if (err) throw err;
+                        res.writeHeader(200, {'Content-Type': 'text/html'});
+                        res.write(Mustache.to_html(""+template, view));
+                        res.end();
+                     });
+                  }
+               });
+            }
+         });
          // TODO: fetch change details
       });
    });

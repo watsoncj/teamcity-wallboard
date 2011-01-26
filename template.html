@@ -5,9 +5,21 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>My Framework</title>
+  <link href='/stylesheets/Merriweather.css' rel='stylesheet' type='text/css'> 
+  <style type="text/css">
+     body {background-color: #1c1c1c; font-family: Merriweather; color: white; text-shadow: 1px 1px 1px rgba(255,255,255,0.2); font-size: 25px;}
+     h1 {margin: 0;}
+     .SUCCESS { color: #9fc302; }
+     .FAILED { color: #c30202; }
+  </style>
 </head>
 
 <body>
-{{buildName}} {{buildStatus}} {{buildStatusText}}
+     <h1>{{buildName}}</h1>
+     <section class='{{buildStatus}}'>
+       {{buildStatus}}: {{buildStatusText}}
+     </section>
+     <img src='{{avatar}}'></img>
+     {{userName}}: {{comment}}
 </body>
 </html>
